@@ -1,18 +1,21 @@
 import express from 'express';
+import session from 'express-session';
 import handlebars from 'express-handlebars';
+import MongoStore from 'connect-mongo';
 import mongoose from 'mongoose';
 import { Server } from 'socket.io';
 
 import viewsRouter from './routes/views.router.js'
 import productsRouter from './routes/products.router.js';
 import cartRouter from './routes/carts.router.js';
+import sessionsRouter from './routes/session.router.js';
 
 import registerChatHandler from './listeners/chatHandler.js';
 import __dirname from './utils.js';
 
 import ProductManager from '../src/dao/fileSystem/Managers/ProductManagers.js';
-import cartsModel from './dao/mongo/models/carts.js';
-import productsModel from './dao/mongo/models/products.js';
+//import cartsModel from './dao/mongo/models/carts.js';
+//import productsModel from './dao/mongo/models/products.js';
 
 const productManager = new ProductManager();
 
@@ -36,9 +39,19 @@ app.engine('handlebars', handlebars.engine());
 app.set('views', `${__dirname}/views`);
 app.set('view engine', 'handlebars');
 
+app.use(session({
+  store: new MongoStore({
+    mongoUrl:'mongodb+srv://CoderUser:123@cluster0.gfqujcv.mongodb.net/ecommerce?retryWrites=true&w=majority',
+    ttl: 3600
+  }),
+  secret: "CoderS3cretfelis",
+  resave: true,
+  saveUninitialized: false
+}))
 
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartRouter);
+app.use('/api/sessions',sessionsRouter);
 app.use('/', viewsRouter);
 
 //Escuchador de eventos (on)
